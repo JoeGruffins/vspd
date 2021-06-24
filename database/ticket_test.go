@@ -5,6 +5,7 @@
 package database
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -46,41 +47,17 @@ func exampleTicket() Ticket {
 }
 
 func testInsertNewTicket(t *testing.T) {
-	// Insert a ticket into the database.
-	ticket := exampleTicket()
-	err := db.InsertNewTicket(ticket)
-	if err != nil {
-		t.Fatalf("error storing ticket in database: %v", err)
+	for i := 0; i < 10000; i++ {
+		// Insert a ticket into the database.
+		ticket := exampleTicket()
+		now := time.Now()
+		err := db.InsertNewTicket(ticket)
+		if err != nil {
+			t.Fatalf("error storing ticket in database: %v", err)
+		}
+		fmt.Printf("time of %v for ticket num %d\n", time.Since(now), i+1)
 	}
 
-	// Insert another ticket.
-	err = db.InsertNewTicket(exampleTicket())
-	if err != nil {
-		t.Fatalf("error storing ticket in database: %v", err)
-	}
-
-	// Inserting a ticket with the same hash should fail.
-	ticket2 := exampleTicket()
-	ticket2.Hash = ticket.Hash
-	err = db.InsertNewTicket(ticket2)
-	if err == nil {
-		t.Fatal("expected an error inserting ticket with duplicate hash")
-	}
-
-	// Inserting a ticket with the same fee address should fail.
-	ticket3 := exampleTicket()
-	ticket3.FeeAddress = ticket.FeeAddress
-	err = db.InsertNewTicket(ticket3)
-	if err == nil {
-		t.Fatal("expected an error inserting ticket with duplicate fee addr")
-	}
-
-	// Inserting a ticket with empty hash should fail.
-	ticket.Hash = ""
-	err = db.InsertNewTicket(ticket)
-	if err == nil {
-		t.Fatal("expected an error inserting ticket with no hash")
-	}
 }
 
 func testDeleteTicket(t *testing.T) {
